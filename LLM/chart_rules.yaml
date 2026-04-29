@@ -1,0 +1,103 @@
+# 图表推荐规则配置
+# 规则按优先级顺序匹配，第一个命中的规则生效
+
+# 全局阈值
+thresholds:
+  max_categories_for_pie: 8      # 饼图最大类别数
+  max_categories_for_bar: 20     # 柱状图最大类别数
+  min_rows_for_line: 5           # 折线图最小行数
+  min_numeric_pairs_for_scatter: 10  # 散点图最小数值对数
+  corr_threshold_low: 0.3         # 相关性弱
+  corr_threshold_high: 0.7        # 相关性强
+
+# 推荐规则
+rules:
+  - id: pie
+    condition:
+      numeric_cols: 1
+      text_cols: 1
+      n_rows: "< 50"
+      n_categories: "<= 8"
+    recommend: "pie"
+    reason: "少量类别 + 单个数值列，饼图适合展示占比"
+
+  - id: bar_horizontal
+    condition:
+      numeric_cols: 1
+      text_cols: 1
+      n_categories: "> 8"
+    recommend: "bar"
+    sub_type: "horizontal"
+    reason: "类别较多，横向柱状图避免标签拥挤"
+
+  - id: bar_vertical
+    condition:
+      numeric_cols: 1
+      text_cols: 1
+      n_categories: "<= 20"
+    recommend: "bar"
+    sub_type: "vertical"
+    reason: "适合展示类别间的数值对比"
+
+  - id: line_time_series
+    condition:
+      numeric_cols: ">= 1"
+      datetime_cols: 1
+      n_rows: ">= 5"
+    recommend: "line"
+    reason: "时间序列数据，折线图最适合展示趋势"
+
+  - id: line_multi_numeric
+    condition:
+      numeric_cols: ">= 2"
+      text_cols: 0
+      n_rows: ">= 5"
+    recommend: "line"
+    sub_type: "multi"
+    reason: "多列数值数据，适合多线对比趋势"
+
+  - id: scatter_correlation
+    condition:
+      numeric_cols: 2
+      n_rows: ">= 10"
+    recommend: "scatter"
+    reason: "两个数值列，适合展示相关性"
+
+  - id: scatter_with_category
+    condition:
+      numeric_cols: 2
+      text_cols: 1
+      n_rows: ">= 10"
+    recommend: "scatter"
+    sub_type: "with_category"
+    reason: "两列数值 + 类别，适合分组散点图"
+
+  - id: histogram_distribution
+    condition:
+      numeric_cols: 1
+      n_rows: "< 1000"
+    recommend: "histogram"
+    reason: "单列数值，适合展示分布"
+
+  - id: boxplot_compare
+    condition:
+      numeric_cols: 1
+      text_cols: 1
+      n_rows: ">= 10"
+    recommend: "boxplot"
+    reason: "适合对比不同类别的数值分布"
+
+  - id: heatmap_correlation
+    condition:
+      numeric_cols: ">= 3"
+      text_cols: 0
+    recommend: "heatmap"
+    reason: "多列数值，适合展示相关性矩阵"
+
+  - id: stacked_bar
+    condition:
+      numeric_cols: ">= 2"
+      text_cols: 1
+    recommend: "bar"
+    sub_type: "stacked"
+    reason: "适合展示部分与整体的关系"

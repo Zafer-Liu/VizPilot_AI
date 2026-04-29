@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>图表生成专业版</title>
+  <style>
+    :root{
+      /* McKinsey-like */
+      --bg1:#0F2742;
+      --bg2:#133A5E;
+      --primary:#005B94;
+      --primary-hover:#004A78;
+      --accent:#00A3A1;
+      --text:#1F2937;
+      --muted:#6B7280;
+      --line:#D1D5DB;
+      --panel:#FFFFFF;
+      --panel-soft:#F5F7FA;
+      --success-bg:#ECFDF5;
+      --success:#0F766E;
+      --error-bg:#FEF2F2;
+      --error:#B91C1C;
+      --info-bg:#EFF6FF;
+      --info:#1D4ED8;
+      --radius:14px;
+      --shadow:0 10px 30px rgba(0,0,0,.08);
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{
+      font-family:Inter,"Microsoft YaHei","PingFang SC","Segoe UI",Roboto,Arial,sans-serif;
+      color:var(--text);
+      background:linear-gradient(135deg,var(--bg1),var(--bg2));
+      padding:20px;
+      overflow:hidden;
+    }
+
+    .container{
+      max-width:1800px;
+      margin:0 auto;
+      height:calc(100vh - 40px);
+      min-height:0;
+      display:flex;
+      flex-direction:column;
+      gap:20px;
+    }
+
+    .header{
+      background:var(--panel);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:22px 28px;
+      flex:0 0 auto;
+      position:relative;
+      overflow:hidden;
+    }
+    .header::after{
+      content:"";
+      position:absolute;
+      right:-40px; top:-40px;
+      width:180px; height:180px;
+      border-radius:50%;
+      background:radial-gradient(circle, #DCEAF5 0%, transparent 70%);
+      pointer-events:none;
+    }
+    .header h1{
+      font-size:28px;
+      color:var(--primary);
+      margin-bottom:6px;
+      letter-spacing:.2px;
+      position:relative;
+      z-index:1;
+    }
+    .header p{color:var(--muted);font-size:14px;position:relative;z-index:1}
+
+    .main{
+      flex:1;
+      min-height:0;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:20px;
+      align-items:stretch;
+      overflow:hidden;
+    }
+
+    .left-column,.right-column{
+      min-height:0;
+      display:flex;
+      flex-direction:column;
+      gap:20px;
+      overflow:auto;
+      scrollbar-width:thin;
+    }
+    .left-column::-webkit-scrollbar,
+    .right-column::-webkit-scrollbar{width:8px}
+    .left-column::-webkit-scrollbar-thumb,
+    .right-column::-webkit-scrollbar-thumb{
+      background:#BFD2E4;border-radius:10px;
+    }
+
+    .panel{
+      background:var(--panel);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:18px;
+      min-height:0;
+    }
+
+    .panel h2{
+      font-size:16px;
+      margin-bottom:14px;
+      padding-bottom:10px;
+      border-bottom:2px solid #E5EDF4;
+      color:#111827;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .upload-panel{flex:0 0 auto;}
+    .settings-panel{flex:0 0 auto;}
+
+    .chat-panel{
+      flex:1 1 auto;
+      min-height:360px;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+    }
+
+    .upload-area{
+      border:2px dashed #7FA7C8;
+      background:var(--panel-soft);
+      border-radius:12px;
+      text-align:center;
+      padding:24px 14px;
+      cursor:pointer;
+      transition:.2s ease;
+      user-select:none;
+    }
+    .upload-area:hover{
+      border-color:var(--primary);
+      transform:translateY(-1px);
+      background:#ECF3F9;
+    }
+    .upload-area .plus{
+      font-size:34px;
+      color:var(--primary);
+      line-height:1;
+      margin-bottom:8px;
+    }
+    .upload-area p{color:var(--muted);font-size:13px;margin:4px 0}
+    .upload-area p strong{color:#111827}
+    input[type="file"]{display:none}
+
+    .settings{
+      background:#FAFAFA;
+      border:1px solid #F0F0F0;
+      border-radius:12px;
+      padding:14px;
+    }
+    .setting-row{margin-bottom:12px}
+    .setting-row:last-child{margin-bottom:0}
+    .setting-row label{
+      display:block;
+      margin-bottom:6px;
+      font-size:13px;
+      font-weight:600;
+      color:#374151;
+    }
+    .setting-row input,.setting-row select{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:10px;
+      padding:10px 12px;
+      font-size:14px;
+      outline:none;
+      transition:border-color .2s, box-shadow .2s;
+      background:#fff;
+    }
+    .setting-row input:focus,.setting-row select:focus{
+      border-color:#7FA7C8;
+      box-shadow:0 0 0 3px #E3EEF7;
+    }
+
+    .btn{
+      border:none;
+      border-radius:10px;
+      background:linear-gradient(180deg, #0E6AA8 0%, var(--primary) 100%);
+      color:#fff;
+      font-weight:600;
+      padding:11px 16px;
+      cursor:pointer;
+      transition:.2s;
+      font-size:14px;
+      box-shadow:0 6px 14px rgba(0,91,148,.25);
+    }
+    .btn:hover{background:linear-gradient(180deg, #0A5C93 0%, var(--primary-hover) 100%);transform:translateY(-1px)}
+    .btn:active{transform:translateY(0)}
+    .btn:disabled{opacity:.6;cursor:not-allowed}
+    .btn-full{width:100%}
+
+    .chat-box{
+      flex:1;
+      min-height:0;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#FCFCFD;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+    }
+    .chat-messages{
+      flex:1;
+      min-height:0;
+      overflow-y:auto;
+      overflow-x:hidden;
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      scrollbar-width:thin;
+    }
+    .chat-messages::-webkit-scrollbar{width:8px}
+    .chat-messages::-webkit-scrollbar-thumb{
+      background:#BFD2E4;
+      border-radius:10px;
+    }
+
+    .message{
+      max-width:82%;
+      border-radius:10px;
+      padding:10px 12px;
+      white-space:pre-wrap;
+      word-break:break-word;
+      font-size:13px;
+      line-height:1.5;
+    }
+    .message.user{
+      margin-left:auto;
+      background:var(--primary);
+      color:#fff;
+      box-shadow:0 3px 10px rgba(0,91,148,.25);
+    }
+    .message.bot{
+      margin-right:auto;
+      background:#fff;
+      border:1px solid var(--line);
+      color:#111827;
+    }
+    .chat-input-area{
+      border-top:1px solid var(--line);
+      padding:10px;
+      display:flex;
+      gap:8px;
+      background:#fff;
+      flex:0 0 auto;
+      position:sticky;
+      bottom:0;
+      z-index:2;
+    }
+    .chat-input-area input{
+      flex:1;
+      border:1px solid var(--line);
+      border-radius:10px;
+      padding:10px 12px;
+      font-size:14px;
+      outline:none;
+    }
+
+    .charts-panel{
+      flex:1 1 auto;
+      min-height:360px;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+    }
+
+    .charts-grid{
+      flex:1;
+      min-height:0;
+      overflow-y:auto;
+      overflow-x:hidden;
+      border:1px solid #E6ECF2;
+      background:#F6F8FB;
+      border-radius:12px;
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      scrollbar-width:thin;
+    }
+
+    .chart-category{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .chart-category-title{
+      font-size:13px;
+      font-weight:700;
+      color:var(--primary);
+      padding:4px 0 2px 2px;
+      border-bottom:2px solid #D5DFEA;
+      letter-spacing:.5px;
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+    .chart-category-title .count{
+      font-size:11px;
+      font-weight:400;
+      color:var(--muted);
+      margin-left:4px;
+    }
+    .chart-cards-wrap{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+      gap:10px;
+    }
+
+    .chart-card{
+      border:1px solid #D5DFEA;
+      border-radius:10px;
+      background:#fff;
+      padding:10px;
+      text-align:center;
+      font-size:12px;
+      cursor:pointer;
+      transition:.18s;
+      user-select:none;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:64px;
+    }
+    .chart-card:hover{
+      border-color:#7FA7C8;
+      background:#ECF3F9;
+      transform:translateY(-1px);
+    }
+    .chart-card.selected{
+      border-color:var(--primary);
+      box-shadow:0 0 0 3px #E3EEF7 inset;
+      background:#ECF3F9;
+      font-weight:600;
+    }
+
+    .actions{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+    .hint{font-size:12px;color:#4B5563;background:#F3F4F6;border:1px dashed #CBD5E1;border-radius:8px;padding:8px 10px}
+
+    .status{
+      border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.4;border-left:4px solid transparent;
+    }
+    .status.success{background:var(--success-bg);color:var(--success);border-left-color:#10B981}
+    .status.error{background:var(--error-bg);color:var(--error);border-left-color:#EF4444}
+    .status.info{background:var(--info-bg);color:var(--info);border-left-color:#3B82F6}
+
+    .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+    .modal.show{display:flex}
+    .modal-content{background:#fff;border-radius:16px;padding:28px;max-width:500px;width:90%}
+    .modal-input{margin-bottom:16px}
+    .modal-input label{display:block;margin-bottom:6px;font-size:13px;font-weight:600}
+    .modal-input input{width:100%;border:1px solid #E5E7EB;border-radius:10px;padding:10px 12px}
+    .modal-buttons{display:flex;gap:10px}
+    .modal-buttons button{flex:1;border:none;border-radius:10px;padding:11px 16px;cursor:pointer}
+    .modal-buttons .cancel{border:1px solid #E5E7EB;background:#fff}
+    .modal-buttons .confirm{background:linear-gradient(180deg, #0E6AA8 0%, var(--primary) 100%);color:#fff}
+
+    @media (max-width:1200px){
+      body{overflow:auto;}
+      .container{height:auto;min-height:calc(100vh - 40px);}
+      .main{grid-template-columns:1fr;overflow:visible;}
+      .left-column,.right-column{overflow:visible;}
+      .chat-panel,.charts-panel{min-height:420px;}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>图表生成专业版</h1>
+      <p>上传数据 · LLM 分析 · 智能推荐图表 · 一键生成可视化</p>
+    </div>
+
+    <div class="main">
+      <div class="left-column">
+        <div class="panel upload-panel">
+          <h2>📤 上传数据</h2>
+          <div class="upload-area" id="uploadArea">
+            <div class="plus">＋</div>
+            <p><strong>点击或拖拽文件到此处</strong></p>
+            <p>支持 Excel（.xlsx）与 CSV（.csv）</p>
+          </div>
+          <input type="file" id="fileInput" accept=".xlsx,.csv" />
+          <div id="uploadStatus" style="margin-top:10px;"></div>
+        </div>
+
+        <div class="panel settings-panel">
+          <h2>⚙️ 配置设置</h2>
+          <div class="settings">
+            <div class="setting-row">
+              <label for="provider">LLM 提供商</label>
+              <select id="provider"><option value="">加载中...</option></select>
+            </div>
+            <div class="setting-row">
+              <label for="apiKey">API 密钥</label>
+              <input type="password" id="apiKey" placeholder="请输入 API Key" />
+            </div>
+            <button class="btn btn-full" id="saveConfigBtn">保存配置</button>
+            <button class="btn btn-full" id="testConfigBtn" style="background:linear-gradient(180deg, #14B8A6 0%, #0F766E 100%);margin-top:8px;">测试配置</button>
+            <button class="btn btn-full" id="addCustomBtn" style="background:linear-gradient(180deg, #F59E0B 0%, #D97706 100%);margin-top:8px;">+ 添加自定义模型</button>
+          </div>
+        </div>
+
+        <div class="panel chat-panel">
+          <h2>💬 对话与分析</h2>
+          <div class="chat-box">
+            <div class="chat-messages" id="chatMessages"></div>
+            <div class="chat-input-area">
+              <input type="text" id="chatInput" placeholder="请输入你的分析需求..." />
+              <button class="btn" id="sendBtn">发送</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="right-column">
+        <div class="panel charts-panel">
+          <h2>📊 选择图表</h2>
+          <div class="charts-grid" id="chartsGrid"></div>
+          <div class="actions">
+            <div class="hint">💡 提示：双击图表可查看详细说明</div>
+            <div id="generateStatus"></div>
+            <button class="btn btn-full" id="generateBtn">生成图表</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="customModelModal" class="modal">
+    <div class="modal-content">
+      <h3>添加自定义 LLM 模型</h3>
+      <div class="modal-input"><label>显示名称</label><input type="text" id="customName" placeholder="例如：我的 Claude" /></div>
+      <div class="modal-input"><label>API Base URL</label><input type="text" id="customBaseUrl" placeholder="https://api.example.com/v1" /></div>
+      <div class="modal-input"><label>模型名称（如 gpt-4）</label><input type="text" id="customModelName" placeholder="例如：gpt-4" /></div>
+      <div class="modal-input"><label>API Key</label><input type="password" id="customApiKey" placeholder="sk-..." /></div>
+      <div class="modal-buttons">
+        <button class="cancel" id="cancelCustomBtn">取消</button>
+        <button class="confirm" id="confirmCustomBtn">添加模型</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentFile = null, selectedChart = null, allCharts = [];
+
+    function setStatus(elId, type, text){
+      const el = document.getElementById(elId);
+      if (!el) return;
+      el.innerHTML = text ? `<div class="status ${type}">${text}</div>` : '';
+    }
+
+    function addMessage(text, role){
+      const box = document.getElementById('chatMessages');
+      const msg = document.createElement('div');
+      msg.className = `message ${role}`;
+      msg.textContent = text;
+      box.appendChild(msg);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function initCharts(){
+      fetch('/api/charts').then(r=>r.json()).then(data=>{
+        allCharts = data.charts || [];
+        const grid = document.getElementById('chartsGrid');
+        grid.innerHTML = '';
+
+        // 按 category 分组
+        const cats = {};
+        allCharts.forEach(chart=>{
+          const cat = chart.category || '其他';
+          if(!cats[cat]) cats[cat] = [];
+          cats[cat].push(chart);
+        });
+
+        // 固定顺序输出各组
+        const catOrder = ['比较','趋势','占比','分布','关系','地理','金融','文本','多维','排名','周期','演变','其他'];
+        const sortedCats = [
+          ...catOrder.filter(c=>cats[c]),
+          ...Object.keys(cats).filter(c=>!catOrder.includes(c))
+        ];
+
+        sortedCats.forEach(cat=>{
+          const charts = cats[cat];
+          const section = document.createElement('div');
+          section.className = 'chart-category';
+
+          const title = document.createElement('div');
+          title.className = 'chart-category-title';
+          title.textContent = cat;
+          const count = document.createElement('span');
+          count.className = 'count';
+          count.textContent = `(${charts.length})`;
+          title.appendChild(count);
+          section.appendChild(title);
+
+          const wrap = document.createElement('div');
+          wrap.className = 'chart-cards-wrap';
+
+          charts.forEach(chart=>{
+            const card = document.createElement('div');
+            card.className = 'chart-card';
+            const zh = chart.name_zh || chart.name || '';
+            const en = chart.name_en || chart.chart_id || '';
+            card.textContent = zh && en ? `${zh}（${en}）` : (zh || en || '未命名图表');
+            card.title = `${chart.desc || ''}（双击查看详情）`;
+            card.dataset.chartId = chart.chart_id;
+
+            card.addEventListener('click', ()=>{
+              document.querySelectorAll('.chart-card').forEach(c=>c.classList.remove('selected'));
+              card.classList.add('selected');
+              selectedChart = chart.chart_id;
+            });
+
+            card.addEventListener('dblclick', ()=>{
+              window.open('/chart-detail?chart_id=' + chart.chart_id, '_blank');
+            });
+
+            wrap.appendChild(card);
+          });
+
+          section.appendChild(wrap);
+          grid.appendChild(section);
+        });
+      });
+    }
+
+    function loadLLMProviders(){
+      fetch('/api/llm/list').then(r=>r.json()).then(data=>{
+        const select = document.getElementById('provider');
+        select.innerHTML = '';
+        const configs = data.configs || {};
+        Object.entries(configs).forEach(([key, cfg])=>{
+          const op = document.createElement('option');
+          op.value = key;
+          op.textContent = cfg.is_custom ? `[自定义] ${cfg.model || key}` : (cfg.provider || key);
+          select.appendChild(op);
+        });
+        if (!select.options.length) select.innerHTML = '<option value="">暂无可用提供商</option>';
+      }).catch(()=>{});
+    }
+
+    function uploadFile(file){
+      const fd = new FormData(); fd.append('file', file);
+      setStatus('uploadStatus','info','正在上传...');
+      fetch('/api/upload',{method:'POST',body:fd}).then(r=>r.json()).then(data=>{
+        if(!data.success) return setStatus('uploadStatus','error','上传失败：' + (data.error || '未知错误'));
+        currentFile = data.filepath;
+        setStatus('uploadStatus','success',`上传成功：${data.rows} 行，${data.columns.length} 列`);
+        addMessage(`文件上传完成：${data.rows} 行 × ${data.columns.length} 列`,'bot');
+      }).catch(e=>setStatus('uploadStatus','error','上传异常：' + e.message));
+    }
+
+    function sendMessage(){
+      const input = document.getElementById('chatInput');
+      const msg = input.value.trim();
+      if(!msg) return;
+      if(!currentFile) return alert('请先上传文件');
+      addMessage(msg,'user'); input.value = '';
+
+      const provider = document.getElementById('provider').value;
+      fetch('/api/analyze',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({filepath:currentFile,query:msg,provider})
+      }).then(r=>r.json()).then(data=>{
+        if(!data.success) return addMessage('分析失败：' + (data.error || '未知错误'),'bot');
+        addMessage(data.analysis?.summary || '分析完成','bot');
+
+        if(Array.isArray(data.recommendations) && data.recommendations.length){
+          function formatRecLabels(rec){
+            const req = new Set(rec.required_fields || []);
+            const fm = rec.field_mapping || {};
+            if(req.has('x') && req.has('y')){
+              return `数据标签：\n  X轴：${rec.x_label || fm.x || '-'}\n  Y轴：${rec.y_label || fm.y || '-'}`;
+            }
+            const entries = Object.entries(fm).filter(([_,v]) => v!=null && String(v).trim()!=='');
+            return entries.length ? '数据标签：\n' + entries.map(([k,v])=>`  ${k}：${v}`).join('\n') : '数据标签：\n  -';
+          }
+          const recText = data.recommendations.map(rec=>{
+            const zh = rec.name_zh || rec.name || '';
+            const en = rec.name_en || rec.chart_id || '';
+            return `${rec.stars || ''} ${zh}${en ? `（${en}）` : ''}\n${rec.reason || ''}\n${formatRecLabels(rec)}`;
+          }).join('\n\n---\n\n');
+          addMessage('=== 推荐图表 ===\n\n' + recText,'bot');
+        }
+      }).catch(e=>addMessage('错误：' + e.message,'bot'));
+    }
+
+    function generateChart(){
+      if(!selectedChart) return alert('请先选择图表');
+      if(!currentFile) return alert('请先上传文件');
+      setStatus('generateStatus','info','正在生成...');
+
+      fetch('/api/generate',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({filepath:currentFile,chart_type:selectedChart})
+      }).then(r=>r.json()).then(data=>{
+        if(!data.success) return setStatus('generateStatus','error','生成失败：' + (data.error || '未知错误'));
+        setStatus('generateStatus','success','生成成功，正在打开下载链接...');
+        if (data.download_url) return window.open(data.download_url, '_blank');
+        if (data.filename) return window.open(`/api/download/${data.filename}`, '_blank');
+      }).catch(e=>setStatus('generateStatus','error','生成异常：' + e.message));
+    }
+
+    function saveConfig(){
+      const provider = document.getElementById('provider').value;
+      const apiKey = document.getElementById('apiKey').value.trim();
+      if(!apiKey) return alert('请输入 API Key');
+      fetch('/api/llm/config',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({provider,api_key:apiKey})
+      }).then(r=>r.json()).then(d=>alert(d.message || '配置已保存')).catch(e=>alert('配置异常：' + e.message));
+    }
+
+    function testConfig(){
+      const provider = document.getElementById('provider').value;
+      if(!provider) return alert('请选择提供商');
+      fetch(`/api/llm/test/${provider}`,{method:'POST'}).then(r=>r.json()).then(d=>{
+        alert(d.success ? `✓ 配置有效\n提供商：${d.provider}\n模型：${d.model}` : `✗ 配置无效\n${d.message}`);
+      }).catch(e=>alert('测试异常：' + e.message));
+    }
+
+    function showAddCustomModal(){ document.getElementById('customModelModal').classList.add('show'); }
+    function hideAddCustomModal(){
+      document.getElementById('customModelModal').classList.remove('show');
+      ['customName','customBaseUrl','customModelName','customApiKey'].forEach(id=>document.getElementById(id).value='');
+    }
+    function addCustomModel(){
+      const name = document.getElementById('customName').value.trim();
+      const base_url = document.getElementById('customBaseUrl').value.trim();
+      const model_name = document.getElementById('customModelName').value.trim();
+      const api_key = document.getElementById('customApiKey').value.trim();
+      if(!name || !base_url || !model_name || !api_key) return alert('请完整填写所有字段');
+
+      fetch('/api/llm/add-custom',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name,base_url,model_name,api_key})
+      }).then(r=>r.json()).then(d=>{
+        if(!d.success) return alert(`✗ 添加失败\n${d.error}`);
+        alert(`✓ 添加成功\nProvider ID：${d.provider_id}`);
+        hideAddCustomModal();
+        loadLLMProviders();
+      }).catch(e=>alert('异常：' + e.message));
+    }
+
+    window.addEventListener('load', ()=>{
+      initCharts();
+      loadLLMProviders();
+
+      document.getElementById('sendBtn').addEventListener('click', sendMessage);
+      document.getElementById('generateBtn').addEventListener('click', generateChart);
+      document.getElementById('saveConfigBtn').addEventListener('click', saveConfig);
+      document.getElementById('testConfigBtn').addEventListener('click', testConfig);
+      document.getElementById('addCustomBtn').addEventListener('click', showAddCustomModal);
+      document.getElementById('cancelCustomBtn').addEventListener('click', hideAddCustomModal);
+      document.getElementById('confirmCustomBtn').addEventListener('click', addCustomModel);
+
+      document.getElementById('chatInput').addEventListener('keydown', e=>{ if(e.key==='Enter') sendMessage(); });
+
+      const uploadArea = document.getElementById('uploadArea');
+      const fileInput = document.getElementById('fileInput');
+
+      uploadArea.addEventListener('click', ()=>fileInput.click());
+      uploadArea.addEventListener('dragover', e=>{ e.preventDefault(); uploadArea.style.background='#ECF3F9'; });
+      uploadArea.addEventListener('dragleave', ()=>{ uploadArea.style.background=''; });
+      uploadArea.addEventListener('drop', e=>{
+        e.preventDefault(); uploadArea.style.background='';
+        if(e.dataTransfer.files?.length) uploadFile(e.dataTransfer.files[0]);
+      });
+
+      fileInput.addEventListener('change', function(){ if(this.files?.length) uploadFile(this.files[0]); });
+    });
+  </script>
+</body>
+</html>

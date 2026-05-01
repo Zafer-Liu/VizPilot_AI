@@ -1,0 +1,298 @@
+"""
+点密度地图 Dot Density Map - 地理
+图表分类: 地理 Geographic
+感知排名: ★★★★☆
+
+统一接口:
+    generate(df, mapping, options) -> ChartResult
+
+逻辑：
+- 自动识别市列，调取市地图
+- 第一个数值列 → 散点着色
+- 第二个数值列（可选）→ 散点大小
+"""
+import sys
+from pathlib import Path
+from typing import Dict, Any, Optional
+
+import pandas as pd
+
+_PROJECT_ROOT = Path(__file__).parent.parent.parent
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+
+from charts.base import ChartResult
+
+__all__ = ["generate"]
+
+_DATA_FMT = "市列 + 地区名列 + 数值列1 [+ 数值列2(可选)]"
+_DESC = "散点图：第一列数值着色，第二列数值控制点大小。"
+
+
+def _fuzzy_match_region(name: str) -> str:
+    """模糊匹配地区名。"""
+    abbr_map = {
+        '北京': '北京市', '上海': '上海市', '天津': '天津市', '重庆': '重庆市',
+        '广州': '广州市', '深圳': '深圳市', '杭州': '杭州市', '南京': '南京市',
+        '武汉': '武汉市', '成都': '成都市', '西安': '西安市', '苏州': '苏州市',
+        '郑州': '郑州市', '长沙': '长沙市', '沈阳': '沈阳市', '青岛': '青岛市',
+        '大连': '大连市', '宁波': '宁波市', '厦门': '厦门市', '福州': '福州市',
+        '济南': '济南市', '哈尔滨': '哈尔滨市', '长春': '长春市', '太原': '太原市',
+        '石家庄': '石家庄市', '贵阳': '贵阳市', '昆明': '昆明市', '南昌': '南昌市',
+        '合肥': '合肥市', '兰州': '兰州市', '银川': '银川市', '西宁': '西宁市',
+        '乌鲁木齐': '乌鲁木齐市',
+        '浙江': '浙江省', '江苏': '江苏省', '山东': '山东省', '四川': '四川省',
+        '湖北': '湖北省', '湖南': '湖南省', '河南': '河南省', '河北': '河北省',
+        '山西': '山西省', '陕西': '陕西省', '安徽': '安徽省', '江西': '江西省',
+        '福建': '福建省', '云南': '云南省', '贵州': '贵州省', '青海': '青海省',
+        '甘肃': '甘肃省', '黑龙江': '黑龙江省', '吉林': '吉林省', '辽宁': '辽宁省',
+        '内蒙古': '内蒙古自治区', '广西': '广西壮族自治区', '西藏': '西藏自治区',
+        '新疆': '新疆维吾尔自治区', '宁夏': '宁夏回族自治区',
+        '香港': '香港特别行政区', '澳门': '澳门特别行政区', '台湾': '台湾省',
+    }
+    return abbr_map.get(name, name)
+
+
+def _is_string_col(s: pd.Series) -> bool:
+    """判断列是否为字符串类型。"""
+    if pd.api.types.is_numeric_dtype(s):
+        return False
+    if pd.api.types.is_datetime64_any_dtype(s):
+        return False
+    return True
+
+
+def _detect_label_col(df: pd.DataFrame, exclude: set) -> Optional[str]:
+    """自动识别地区名列（首个字符串列）。"""
+    for c in df.columns:
+        if c not in exclude and _is_string_col(df[c]):
+            return c
+    return None
+
+
+def _detect_value_col(df: pd.DataFrame, exclude: set, hint: str = None) -> Optional[str]:
+    """识别数值列。"""
+    if hint:
+        for c in df.columns:
+            if c not in exclude and c.lower() == hint.lower():
+                return c
+    for c in df.columns:
+        if c not in exclude and pd.api.types.is_numeric_dtype(df[c]):
+            return c
+    return None
+
+
+# 预定义各区县中心坐标 [lng, lat]
+_REGION_COORDS = {
+    # 宜昌市
+    '夷陵区': [111.32, 30.77], '西陵区': [111.27, 30.70],
+    '伍家岗区': [111.35, 30.65], '点军区': [111.00, 30.72],
+    '猇亭区': [111.42, 30.53], '枝江市': [111.77, 30.43],
+    '当阳市': [111.78, 30.82], '宜都市': [111.45, 30.40],
+    '远安县': [111.63, 31.07], '兴山县': [110.75, 31.35],
+    '秭归县': [110.98, 30.83], '长阳土家族自治县': [111.18, 30.47],
+    '五峰土家族自治县': [110.67, 30.20],
+    # 武汉
+    '江岸区': [114.30, 30.60], '江汉区': [114.27, 30.59],
+    '硚口区': [114.27, 30.57], '汉阳区': [114.23, 30.55],
+    '武昌区': [114.31, 30.56], '青山区': [114.39, 30.63],
+    '洪山区': [114.31, 30.50], '黄陂区': [114.30, 30.79],
+    '新洲区': [114.79, 30.84], '江夏区': [114.31, 30.35],
+    '蔡甸区': [113.96, 30.58], '汉南区': [113.97, 30.31],
+}
+
+
+def generate(
+    df: pd.DataFrame = None,
+    mapping: Dict[str, str] = None,
+    options: Dict[str, Any] = None,
+    excel_path: str = None,
+    city: str = None,
+    label: str = None,
+    value: str = None,
+    title: str = "点密度地图",
+    **kwargs,
+) -> ChartResult:
+    """
+    参数说明：
+        city   : 市列名
+        label  : 地区名列名
+        value  : 数值列名（第一列用于着色）
+    """
+    from pyecharts.charts import Geo
+    from pyecharts import options as opts
+
+    warnings_: list = []
+    options = options or {}
+    mapping = mapping or {}
+
+    # ── 读取数据 ──────────────────────────────────────────
+    if df is None:
+        if excel_path:
+            try:
+                df = pd.read_excel(excel_path)
+            except Exception as e:
+                return ChartResult(warnings=[f"读取Excel失败: {e}"])
+        else:
+            return ChartResult(warnings=["请提供 df 或 excel_path"])
+
+    city_hint = mapping.get("city") or city
+    lbl_hint = mapping.get("label") or label
+    val_hint = mapping.get("value") or value
+    title = options.get("title", title)
+
+    # ── 列识别 ────────────────────────────────────────────
+    used: set = set()
+
+    # 识别市列
+    _city = None
+    if city_hint and city_hint in df.columns:
+        _city = city_hint
+    else:
+        for c in df.columns:
+            c_lower = c.lower()
+            if c_lower in ['市', 'city', '城市', '省市']:
+                _city = c
+                break
+
+    if _city:
+        used.add(_city)
+    else:
+        return ChartResult(warnings=["找不到市列 [city]"])
+
+    # 识别地区名列
+    _label = lbl_hint if (lbl_hint and lbl_hint in df.columns) else _detect_label_col(df, used)
+    if _label:
+        used.add(_label)
+    else:
+        return ChartResult(warnings=["找不到地区名列 [label]"])
+
+    # 识别数值列（可能有多个）
+    _value1 = _detect_value_col(df, used, val_hint)
+    if _value1:
+        used.add(_value1)
+    else:
+        return ChartResult(warnings=["找不到数值列 [value]"])
+
+    _value2 = _detect_value_col(df, used)  # 第二个数值列（可选）
+
+    # ── 提取市名作为 maptype ──────────────────────────────
+    city_val = str(df[_city].iloc[0]).strip()
+    city_val = _fuzzy_match_region(city_val)
+    maptype = city_val[:-1] if city_val.endswith('市') else city_val
+
+    # ── 构建散点数据 ────────────────────────────────────
+    scatter_data: list = []  # [(lng, lat, val1, name), ...]
+    val1_list: list = []
+
+    for _, row in df.iterrows():
+        try:
+            raw_name = str(row[_label]).strip()
+            name = _fuzzy_match_region(raw_name)
+            val1 = round(float(row[_value1]), 2)
+        except Exception as e:
+            warnings_.append(f"行解析失败 [{raw_name}]: {e}")
+            continue
+
+        coord = _REGION_COORDS.get(name)
+        if not coord:
+            warnings_.append(f"无坐标: {name}")
+            continue
+
+        scatter_data.append((coord[0], coord[1], val1, name))
+        val1_list.append(val1)
+
+    if not scatter_data:
+        return ChartResult(warnings=["没有有效数据点"])
+
+    vmin1, vmax1 = min(val1_list), max(val1_list)
+
+    # ── 构建 Geo + Scatter ────────────────────────────────
+    geo = Geo()
+    geo.add_schema(maptype=maptype)
+
+    # 构建散点数据：[(name, val1), ...]
+    geo_data = [(name, val1) for _, _, val1, name in scatter_data]
+
+    geo.add(
+        series_name=_value1,
+        data_pair=geo_data,
+        type_="effectScatter",
+        symbol_size=20,
+        itemstyle_opts=opts.ItemStyleOpts(opacity=0.9),
+    )
+
+    geo.set_global_opts(
+        title_opts=opts.TitleOpts(
+            title=title,
+            title_textstyle_opts=opts.TextStyleOpts(
+                color="#003D7A", font_size=18,
+                font_family="Heiti SC, Microsoft YaHei, sans-serif",
+                font_weight="bold",
+            ),
+        ),
+        visualmap_opts=opts.VisualMapOpts(
+            min_=vmin1,
+            max_=vmax1,
+            is_piecewise=False,
+            range_color=["#B9D6E8", "#7FB5D5", "#0084D1", "#003D7A", "#001F3F"],
+            textstyle_opts=opts.TextStyleOpts(color="#333"),
+            pos_left="left",
+            pos_bottom="20",
+        ),
+        tooltip_opts=opts.TooltipOpts(trigger="item", formatter="{b}"),
+    )
+
+    raw_html = geo.render_embed()
+
+    sub_parts = [f"共 {len(scatter_data)} 个地区"]
+    sub_parts.append(f"字段: {_value1} · 范围: {vmin1:.2f} ~ {vmax1:.2f}")
+    if _value2:
+        sub_parts.append(f"附加: {_value2}")
+
+    html = f"""<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{title}</title>
+<style>
+* {{ margin: 0; padding: 0; box-sizing: border-box; }}
+html, body {{ width: 100%; height: 100%;
+  font-family: "Heiti SC", "Microsoft YaHei", sans-serif;
+  background: #fff; }}
+#header {{
+  padding: 14px 24px; background: #fff;
+  border-bottom: 1px solid #e8ecf0;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+}}
+#header h1 {{ font-size: 18px; color: #003D7A; font-weight: 700; }}
+#header .sub {{ font-size: 12px; color: #999; margin-top: 3px; }}
+#chart {{ width: 100%; height: calc(100vh - 60px); }}
+</style>
+</head>
+<body>
+<div id="header">
+  <h1>{title}</h1>
+  <div class="sub">{" · ".join(sub_parts)}</div>
+</div>
+<div id="chart">
+{raw_html}
+</div>
+</body>
+</html>"""
+
+    meta = {
+        "chart_id": "dot_density_map",
+        "n_rows": len(df),
+        "n_points": len(scatter_data),
+        "city_col": _city,
+        "label_col": _label,
+        "value_col": _value1,
+        "value2_col": _value2,
+        "maptype": maptype,
+        "value_min": vmin1,
+        "value_max": vmax1,
+    }
+
+    return ChartResult(html=html, spec={}, warnings=warnings_, meta=meta)

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>宜昌市各区县人口密度分布</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%;
+  font-family: "Heiti SC", "Microsoft YaHei", sans-serif;
+  background: #fff; }
+#header {
+  padding: 14px 24px; background: #fff;
+  border-bottom: 1px solid #e8ecf0;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+}
+#header h1 { font-size: 18px; color: #003D7A; font-weight: 700; }
+#header .sub { font-size: 12px; color: #999; margin-top: 3px; }
+#chart { width: 100%; height: calc(100vh - 60px); }
+</style>
+</head>
+<body>
+<div id="header">
+  <h1>宜昌市各区县人口密度分布</h1>
+  <div class="sub">共 6 个地区 · 字段: 人口密度 · 范围: 163.73 ~ 5934.44</div>
+</div>
+<div id="chart">
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Awesome-pyecharts</title>
+                <script type="text/javascript" src="https://assets.pyecharts.org/assets/v6/echarts.min.js"></script>
+            <script type="text/javascript" src="https://assets.pyecharts.org/assets/v6/maps/hu2_bei3_yi2_chang1.js"></script>
+
+    
+</head>
+<body >
+    <div id="43aec517c73843299a28fe6549cc2431" class="chart-container" style="width:900px; height:500px; "></div>
+    <script>
+        var chart_43aec517c73843299a28fe6549cc2431 = echarts.init(
+            document.getElementById('43aec517c73843299a28fe6549cc2431'), 'white', {renderer: 'canvas', locale: 'ZH'});
+        var option_43aec517c73843299a28fe6549cc2431 = {
+    "animation": true,
+    "animationThreshold": 2000,
+    "animationDuration": 1000,
+    "animationEasing": "cubicOut",
+    "animationDelay": 0,
+    "animationDurationUpdate": 300,
+    "animationEasingUpdate": "cubicOut",
+    "animationDelayUpdate": 0,
+    "aria": {
+        "enabled": false
+    },
+    "series": [
+        {
+            "type": "map",
+            "name": "\u4eba\u53e3\u5bc6\u5ea6",
+            "label": {
+                "show": true,
+                "margin": 8,
+                "richInheritPlainLabel": true,
+                "valueAnimation": false
+            },
+            "map": "\u5b9c\u660c",
+            "data": [
+                {
+                    "name": "\u5937\u9675\u533a",
+                    "value": 163.73
+                },
+                {
+                    "name": "\u897f\u9675\u533a",
+                    "value": 5934.44
+                },
+                {
+                    "name": "\u679d\u6c5f\u5e02",
+                    "value": 327.33
+                },
+                {
+                    "name": "\u5f53\u9633\u5e02",
+                    "value": 193.93
+                },
+                {
+                    "name": "\u5b9c\u90fd\u5e02",
+                    "value": 264.11
+                },
+                {
+                    "name": "\u4f0d\u5bb6\u5c97\u533a",
+                    "value": 4897.1
+                }
+            ],
+            "roam": true,
+            "aspectScale": 0.75,
+            "nameProperty": "name",
+            "selectedMode": false,
+            "zoom": 1,
+            "zlevel": 0,
+            "z": 2,
+            "seriesLayoutBy": "column",
+            "datasetIndex": 0,
+            "mapValueCalculation": "sum",
+            "showLegendSymbol": false,
+            "preserveAspect": false,
+            "clip": false,
+            "emphasis": {}
+        }
+    ],
+    "legend": [
+        {
+            "data": [
+                "\u4eba\u53e3\u5bc6\u5ea6"
+            ],
+            "selected": {},
+            "show": true,
+            "padding": 5,
+            "itemGap": 10,
+            "itemWidth": 25,
+            "itemHeight": 14,
+            "backgroundColor": "transparent",
+            "borderColor": "#ccc",
+            "borderRadius": 0,
+            "pageButtonItemGap": 5,
+            "pageButtonPosition": "end",
+            "pageFormatter": "{current}/{total}",
+            "pageIconColor": "#2f4554",
+            "pageIconInactiveColor": "#aaa",
+            "pageIconSize": 15,
+            "animationDurationUpdate": 800,
+            "selector": false,
+            "selectorPosition": "auto",
+            "selectorItemGap": 7,
+            "selectorButtonGap": 10,
+            "triggerEvent": false
+        }
+    ],
+    "tooltip": {
+        "show": true,
+        "trigger": "item",
+        "triggerOn": "mousemove|click",
+        "axisPointer": {
+            "type": "line"
+        },
+        "showContent": true,
+        "alwaysShowContent": false,
+        "showDelay": 0,
+        "hideDelay": 100,
+        "enterable": false,
+        "confine": false,
+        "appendToBody": false,
+        "transitionDuration": 0.4,
+        "displayTransition": true,
+        "formatter": "{b}<br/>\u4eba\u53e3\u5bc6\u5ea6: {c}",
+        "textStyle": {
+            "fontSize": 14,
+            "richInheritPlainLabel": true
+        },
+        "borderWidth": 0,
+        "padding": 5,
+        "order": "seriesAsc"
+    },
+    "title": [
+        {
+            "show": true,
+            "text": "\u5b9c\u660c\u5e02\u5404\u533a\u53bf\u4eba\u53e3\u5bc6\u5ea6\u5206\u5e03",
+            "target": "blank",
+            "subtarget": "blank",
+            "padding": 5,
+            "itemGap": 10,
+            "textAlign": "auto",
+            "textVerticalAlign": "auto",
+            "triggerEvent": false,
+            "textStyle": {
+                "color": "#003D7A",
+                "fontWeight": "bold",
+                "fontFamily": "Heiti SC, Microsoft YaHei, sans-serif",
+                "fontSize": 18,
+                "richInheritPlainLabel": true
+            }
+        }
+    ],
+    "visualMap": {
+        "show": true,
+        "type": "continuous",
+        "min": 163.73,
+        "max": 5934.44,
+        "textStyle": {
+            "color": "#333",
+            "richInheritPlainLabel": true
+        },
+        "inRange": {
+            "color": [
+                "#B9D6E8",
+                "#7FB5D5",
+                "#0084D1",
+                "#003D7A",
+                "#001F3F"
+            ]
+        },
+        "calculable": true,
+        "inverse": false,
+        "splitNumber": 5,
+        "hoverLink": true,
+        "orient": "vertical",
+        "left": "left",
+        "bottom": "20",
+        "padding": 5,
+        "showLabel": true,
+        "itemWidth": 20,
+        "itemHeight": 140,
+        "borderWidth": 0
+    }
+};
+        chart_43aec517c73843299a28fe6549cc2431.setOption(option_43aec517c73843299a28fe6549cc2431);
+    </script>
+</body>
+</html>
+
+</div>
+</body>
+</html>

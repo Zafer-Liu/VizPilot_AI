@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>点密度地图</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%;
+  font-family: "Heiti SC", "Microsoft YaHei", sans-serif;
+  background: #fff; }
+#header {
+  padding: 14px 24px; background: #fff;
+  border-bottom: 1px solid #e8ecf0;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+}
+#header h1 { font-size: 18px; color: #003D7A; font-weight: 700; }
+#header .sub { font-size: 12px; color: #999; margin-top: 3px; }
+#chart { width: 100%; height: calc(100vh - 60px); }
+</style>
+</head>
+<body>
+<div id="header">
+  <h1>点密度地图</h1>
+  <div class="sub">共 13 个地区 · 字段: 人口密度 · 范围: 62.18 ~ 5934.44</div>
+</div>
+<div id="chart">
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Awesome-pyecharts</title>
+                <script type="text/javascript" src="https://assets.pyecharts.org/assets/v6/echarts.min.js"></script>
+            <script type="text/javascript" src="https://assets.pyecharts.org/assets/v6/maps/hu2_bei3_yi2_chang1.js"></script>
+
+    
+</head>
+<body >
+    <div id="936bc52679394fb18c2deb32c508845f" class="chart-container" style="width:900px; height:500px; "></div>
+    <script>
+        var chart_936bc52679394fb18c2deb32c508845f = echarts.init(
+            document.getElementById('936bc52679394fb18c2deb32c508845f'), 'white', {renderer: 'canvas', locale: 'ZH'});
+        var option_936bc52679394fb18c2deb32c508845f = {
+    "animation": true,
+    "animationThreshold": 2000,
+    "animationDuration": 1000,
+    "animationEasing": "cubicOut",
+    "animationDelay": 0,
+    "animationDurationUpdate": 300,
+    "animationEasingUpdate": "cubicOut",
+    "animationDelayUpdate": 0,
+    "aria": {
+        "enabled": false
+    },
+    "series": [
+        {
+            "type": "effectScatter",
+            "name": "\u4eba\u53e3\u5bc6\u5ea6",
+            "coordinateSystem": "geo",
+            "showEffectOn": "render",
+            "rippleEffect": {
+                "show": true,
+                "brushType": "stroke",
+                "scale": 2.5,
+                "period": 4
+            },
+            "symbolSize": 20,
+            "data": [
+                {
+                    "name": "\u5937\u9675\u533a",
+                    "value": [
+                        111.32,
+                        30.77,
+                        163.73
+                    ]
+                },
+                {
+                    "name": "\u897f\u9675\u533a",
+                    "value": [
+                        111.27,
+                        30.7,
+                        5934.44
+                    ]
+                },
+                {
+                    "name": "\u679d\u6c5f\u5e02",
+                    "value": [
+                        111.77,
+                        30.43,
+                        327.33
+                    ]
+                },
+                {
+                    "name": "\u5f53\u9633\u5e02",
+                    "value": [
+                        111.78,
+                        30.82,
+                        193.93
+                    ]
+                },
+                {
+                    "name": "\u5b9c\u90fd\u5e02",
+                    "value": [
+                        111.45,
+                        30.4,
+                        264.11
+                    ]
+                },
+                {
+                    "name": "\u4f0d\u5bb6\u5c97\u533a",
+                    "value": [
+                        111.35,
+                        30.65,
+                        4897.1
+                    ]
+                },
+                {
+                    "name": "\u957f\u9633\u571f\u5bb6\u65cf\u81ea\u6cbb\u53bf",
+                    "value": [
+                        111.18,
+                        30.47,
+                        93.03
+                    ]
+                },
+                {
+                    "name": "\u79ed\u5f52\u53bf",
+                    "value": [
+                        110.98,
+                        30.83,
+                        127.94
+                    ]
+                },
+                {
+                    "name": "\u8fdc\u5b89\u53bf",
+                    "value": [
+                        111.63,
+                        31.07,
+                        101.14
+                    ]
+                },
+                {
+                    "name": "\u4e94\u5cf0\u571f\u5bb6\u65cf\u81ea\u6cbb\u53bf",
+                    "value": [
+                        110.67,
+                        30.2,
+                        78.09
+                    ]
+                },
+                {
+                    "name": "\u5174\u5c71\u53bf",
+                    "value": [
+                        110.75,
+                        31.35,
+                        62.18
+                    ]
+                },
+                {
+                    "name": "\u70b9\u519b\u533a",
+                    "value": [
+                        111.27,
+                        30.7,
+                        193.22
+                    ]
+                },
+                {
+                    "name": "\u7307\u4ead\u533a",
+                    "value": [
+                        111.42,
+                        30.53,
+                        586.44
+                    ]
+                }
+            ],
+            "itemStyle": {
+                "opacity": 0.9
+            }
+        }
+    ],
+    "legend": [
+        {
+            "data": [
+                "\u4eba\u53e3\u5bc6\u5ea6"
+            ],
+            "selected": {},
+            "show": true,
+            "padding": 5,
+            "itemGap": 10,
+            "itemWidth": 25,
+            "itemHeight": 14,
+            "backgroundColor": "transparent",
+            "borderColor": "#ccc",
+            "borderRadius": 0,
+            "pageButtonItemGap": 5,
+            "pageButtonPosition": "end",
+            "pageFormatter": "{current}/{total}",
+            "pageIconColor": "#2f4554",
+            "pageIconInactiveColor": "#aaa",
+            "pageIconSize": 15,
+            "animationDurationUpdate": 800,
+            "selector": false,
+            "selectorPosition": "auto",
+            "selectorItemGap": 7,
+            "selectorButtonGap": 10,
+            "triggerEvent": false
+        }
+    ],
+    "tooltip": {
+        "show": true,
+        "trigger": "item",
+        "triggerOn": "mousemove|click",
+        "axisPointer": {
+            "type": "line"
+        },
+        "showContent": true,
+        "alwaysShowContent": false,
+        "showDelay": 0,
+        "hideDelay": 100,
+        "enterable": false,
+        "confine": false,
+        "appendToBody": false,
+        "transitionDuration": 0.4,
+        "displayTransition": true,
+        "formatter": "{b}",
+        "textStyle": {
+            "fontSize": 14,
+            "richInheritPlainLabel": true
+        },
+        "borderWidth": 0,
+        "padding": 5,
+        "order": "seriesAsc"
+    },
+    "title": [
+        {
+            "show": true,
+            "text": "\u70b9\u5bc6\u5ea6\u5730\u56fe",
+            "target": "blank",
+            "subtarget": "blank",
+            "padding": 5,
+            "itemGap": 10,
+            "textAlign": "auto",
+            "textVerticalAlign": "auto",
+            "triggerEvent": false,
+            "textStyle": {
+                "color": "#003D7A",
+                "fontWeight": "bold",
+                "fontFamily": "Heiti SC, Microsoft YaHei, sans-serif",
+                "fontSize": 18,
+                "richInheritPlainLabel": true
+            }
+        }
+    ],
+    "visualMap": {
+        "show": true,
+        "type": "continuous",
+        "min": 62.18,
+        "max": 5934.44,
+        "textStyle": {
+            "color": "#333",
+            "richInheritPlainLabel": true
+        },
+        "inRange": {
+            "color": [
+                "#B9D6E8",
+                "#7FB5D5",
+                "#0084D1",
+                "#003D7A",
+                "#001F3F"
+            ]
+        },
+        "calculable": true,
+        "inverse": false,
+        "splitNumber": 5,
+        "hoverLink": true,
+        "orient": "vertical",
+        "left": "left",
+        "bottom": "20",
+        "padding": 5,
+        "showLabel": true,
+        "itemWidth": 20,
+        "itemHeight": 140,
+        "borderWidth": 0
+    },
+    "geo": {
+        "map": "\u5b9c\u660c",
+        "roam": true,
+        "aspectScale": 0.75,
+        "nameProperty": "name",
+        "selectedMode": false,
+        "emphasis": {},
+        "preserveAspect": false,
+        "clip": false
+    }
+};
+        chart_936bc52679394fb18c2deb32c508845f.setOption(option_936bc52679394fb18c2deb32c508845f);
+    </script>
+</body>
+</html>
+
+</div>
+</body>
+</html>

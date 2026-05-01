@@ -144,20 +144,39 @@ REGISTRY: List[ChartMetadata] = [
     ChartMetadata(chart_id="stem_leaf", name="茎叶图", category="分布类 DISTRIBUTION", min_fields=1, required_roles=["value"], desc="数据分布的详细展示", data_format="数值列", constraints="适合小数据集"),
 
     # 地理类 GEOSPATIAL
-    ChartMetadata(chart_id="bubble_map", name="气泡地图", category="地理类 GEOSPATIAL", min_fields=3,
-                  required_roles=["lat", "lon", "value"], optional_roles=["color"], desc="地理位置上的气泡大小表示数值",
-                  data_format="纬度 + 经度 + 数值", constraints="需要地理坐标"),
-    ChartMetadata(chart_id="choropleth_map", name="地图", category="地理类 GEOSPATIAL", min_fields=2,
-                  required_roles=["region", "value"], desc="地理区域着色展示", data_format="地区 + 数值",
-                  constraints="需要地理数据"),
-    ChartMetadata(chart_id="dot_density_map", name="点密度图", category="地理类 GEOSPATIAL", min_fields=2,
-                  required_roles=["lat", "lon"], desc="地理分布密度展示", data_format="纬度 + 经度",
-                  constraints="需要地理坐标"),
-    ChartMetadata(chart_id="flow_map", name="流向图", category="地理类 GEOSPATIAL", min_fields=4,
-                  required_roles=["source_lat", "source_lon", "target_lat", "target_lon"], optional_roles=["value"],
-                  desc="地理流向展示", data_format="源坐标 + 目标坐标 + 可选流量", constraints="需要地理坐标"),
-
-    # 关系类 RELATIONSHIP
+    ChartMetadata(
+        chart_id="Flow_Map",
+        name="动态流向图",
+        category="地理类 GEOSPATIAL",
+        min_fields=3,
+        required_roles=["from", "to", "value"],
+        optional_roles=["color"],
+        desc="用箭头动画和涟漪效果表示地点间的流向关系，箭头方向表示流向，涟漪密度表示流量强度",
+        data_format="起点 + 终点 + 流量数值",
+        constraints="地名需与pyecharts内置坐标库匹配（3700+中国城市/区县），流量数值应为正数，每行代表一条流向关系"
+    ),
+    ChartMetadata(
+        chart_id="Dot_Density_Map",
+        name="点密度地图",
+        category="地理类 GEOSPATIAL",
+        min_fields=2,
+        required_roles=["label", "value"],
+        optional_roles=["category"],
+        desc="用点的数量和密度表示绝对数值分布，每个点代表固定数量单位，点越密集表示总量越大",
+        data_format="label + value + (可选 category)",
+        constraints="地名需匹配 pyecharts 内置中国城市/区县库（3700+），value 需为绝对数值，数据为长格式（每行一个地点/分组组合）",
+            ),
+    ChartMetadata(
+        chart_id="Choropleth_Map",
+        name="面量图",
+        category="地理类 GEOSPATIAL",
+        min_fields=2,
+        required_roles=["label", "value"],
+        desc="用区域填充颜色的深浅表示相对数值分布，颜色越深表示数值越大，适合展示密度、比率等归一化指标",
+        data_format="地区 + 相对数值（密度、比率、百分比等）",
+        constraints="地名需匹配 pyecharts 内置中国城市/区县库（3700+），value 需为相对数值（非绝对总量），数据为长格式（每行一个地区）"
+    ),
+        # 关系类 RELATIONSHIP
     ChartMetadata(chart_id="scatter_plot", name="散点图", category="关系类 RELATIONSHIP", min_fields=2, required_roles=["x", "y"],
                   optional_roles=["size", "color"], desc="展示两个数值变量之间的相关性",
                   data_format="x列(数值) + y列(数值)", constraints="至少需要两个数值列"),

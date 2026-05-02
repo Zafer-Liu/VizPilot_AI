@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>弦图</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: "Microsoft YaHei", sans-serif; background: #fafafa; padding: 40px; }
+        .container { background: white; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); padding: 24px; max-width: 1200px; margin: 0 auto; }
+        h1 { color: #222; font-size: 22px; margin-bottom: 6px; }
+        .subtitle { color: #888; font-size: 13px; margin-bottom: 24px; }
+        #chord-container { display: flex; justify-content: center; align-items: center; min-height: 600px; }
+        .ribbon { fill-opacity: 0.67; stroke: none; }
+        .node-arc { stroke: white; stroke-width: 2px; }
+        .node-label { font-size: 12px; font-weight: 500; text-anchor: middle; pointer-events: none; }
+        .tooltip {
+            position: absolute; background: rgba(0,0,0,0.8); color: white; padding: 8px 12px;
+            border-radius: 4px; font-size: 12px; pointer-events: none; display: none; z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>弦图</h1>
+    <div class="subtitle">弦图 Chord Diagram | D3.js</div>
+    <div id="chord-container"></div>
+</div>
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+const matrix = [[0.0, 120.0, 80.0, 50.0, 40.0, 35.0], [120.0, 0.0, 200.0, 80.0, 90.0, 70.0], [80.0, 200.0, 0.0, 60.0, 50.0, 45.0], [50.0, 80.0, 60.0, 0.0, 110.0, 130.0], [40.0, 90.0, 50.0, 110.0, 0.0, 95.0], [35.0, 70.0, 45.0, 130.0, 95.0, 0.0]];
+const nodes = [{"id": "中国", "color": "#003D7A"}, {"id": "美国", "color": "#0084D1"}, {"id": "日本", "color": "#00A4EF"}, {"id": "德国", "color": "#7FBA00"}, {"id": "英国", "color": "#FFB81C"}, {"id": "法国", "color": "#F7630C"}];
+
+const width = 800, height = 800;
+const innerRadius = Math.min(width, height) * 0.3;
+const outerRadius = innerRadius + 30;
+
+const svg = d3.select("#chord-container")
+    .append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .attr("viewBox", [-width / 2, -height / 2, width, height]);
+
+const chord = d3.chord()
+    .padAngle(0.05)
+    .sortSubgroups(d3.descending)
+    .sortChords(d3.descending);
+
+const chords = chord(matrix);
+
+const arc = d3.arc()
+    .innerRadius(innerRadius)
+    .outerRadius(outerRadius);
+
+const ribbon = d3.ribbon()
+    .radius(innerRadius);
+
+const g = svg.append("g");
+
+g.selectAll(".node-arc")
+    .data(chords.groups)
+    .join("path")
+    .attr("class", "node-arc")
+    .attr("fill", (d, i) => nodes[i].color)
+    .attr("stroke", (d, i) => d3.rgb(nodes[i].color).darker())
+    .attr("d", arc);
+
+g.selectAll(".ribbon")
+    .data(chords)
+    .join("path")
+    .attr("class", "ribbon")
+    .attr("d", ribbon)
+    .attr("fill", d => d3.rgb(nodes[d.source.index].color).copy({opacity: 0.6}))
+    .attr("stroke", d => d3.rgb(nodes[d.source.index].color).darker())
+    .on("mouseover", function(event, d) {
+        const tooltip = document.getElementById("tooltip");
+        const sourceName = nodes[d.source.index].id;
+        const targetName = nodes[d.target.index].id;
+        const value = matrix[d.source.index][d.target.index];
+        tooltip.innerHTML = `<strong>${sourceName} → ${targetName}</strong><br>强度: ${value.toFixed(2)}`;
+        tooltip.style.display = "block";
+        tooltip.style.left = (event.pageX + 10) + "px";
+        tooltip.style.top = (event.pageY + 10) + "px";
+    })
+    .on("mousemove", function(event) {
+        const tooltip = document.getElementById("tooltip");
+        tooltip.style.left = (event.pageX + 10) + "px";
+        tooltip.style.top = (event.pageY + 10) + "px";
+    })
+    .on("mouseout", function() {
+        document.getElementById("tooltip").style.display = "none";
+    });
+
+g.selectAll(".node-label")
+    .data(chords.groups)
+    .join("text")
+    .attr("class", "node-label")
+    .attr("dy", "0.35em")
+    .attr("transform", d => {
+        const angle = (d.startAngle + d.endAngle) / 2;
+        const x = Math.cos(angle - Math.PI / 2) * (outerRadius + 40);
+        const y = Math.sin(angle - Math.PI / 2) * (outerRadius + 40);
+        return `translate(${x},${y})rotate(${angle * 180 / Math.PI - 90})`;
+    })
+    .text((d, i) => nodes[i].id)
+    .attr("fill", "#333");
+</script>
+</body>
+</html>

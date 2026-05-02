@@ -1,6 +1,6 @@
 """
 分组柱状图 Grouped Bar - 比较图表
-图表分类: 比较 Comparison | 书章节: Ch4
+图表分类: 比较 Comparison
 感知排名: ★★★★☆
 
 统一接口:

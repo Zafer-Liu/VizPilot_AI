@@ -1,4 +1,4 @@
-# 点密度地图 Dot Density Map
+# 面量图 Choropleth Map
 
 图表分类: 地理 Geospatial  
 感知排名: ⭐⭐⭐⭐☆

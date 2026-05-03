@@ -8,7 +8,7 @@ if errorlevel 1 (
   exit /b 1
 )
 
-set "APP_FILE=app_pro.py"
+set "APP_FILE=app.py"
 set "VENV_DIR=.venv"
 set "USE_VENV=1"
 set "PORT=5017"
